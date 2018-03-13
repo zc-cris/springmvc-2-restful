@@ -1,0 +1,35 @@
+package com.zc.cris.springmvc.crud.entities;
+
+public class Department {
+
+	private Integer id;
+	private String name;
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Department(Integer id, String name) {
+		super();
+		this.id = id;
+		this.name = name;
+	}
+
+	public Department() {
+		super();
+
+	}
+
+}
