@@ -1,14 +1,31 @@
 package com.zc.cris.springmvc.crud.controllers;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sun.prism.impl.BaseMesh.FaceMembers;
 import com.zc.cris.springmvc.crud.dao.DeptDao;
@@ -22,6 +39,107 @@ public class EmpContoller {
 	private EmpDao empDao;
 	@Autowired
 	private DeptDao deptDao;
+	
+	/**
+	 * 
+	 * @MethodName: testResponseEntity
+	 * @Description: TODO (测试springMVC 根据ResponseEntity<T> 的泛型选择对应的HttpMessageConverter 实现类来处理后台返回给前台的数据)
+	 * @param session
+	 * @return
+	 * @throws IOException
+	 * @Return Type: ResponseEntity<byte[]>
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testResponseEntity")
+	public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOException{
+		
+		//读取文件并且放入 ResponseEntity 中
+		byte[] body = null;
+		ServletContext servletContext = session.getServletContext();
+		InputStream in = servletContext.getResourceAsStream("/file/a.txt");
+		body = new byte[in.available()];
+		in.read(body);
+		
+		//设置响应头
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Disposition", "attachment;filename=abc.txt");
+		
+		//设置响应玛
+		HttpStatus status = HttpStatus.OK;
+		
+		ResponseEntity<byte[]> responseEntity = 
+				new ResponseEntity<byte[]>(body, headers, status);
+				
+		return responseEntity;
+	}
+	
+	/**
+	 * 
+	 * @MethodName: testHttpMessageConverter
+	 * @Description: TODO (测试使用@ResponseBody 和 @RequestBody 注解完成前后端数据交互，模拟文件上传即后台回应)
+	 * @param body
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@ResponseBody
+	@RequestMapping("testHttpMessageConverter")
+	public String testHttpMessageConverter(@RequestBody String body) {
+		//将上传的文件转换为String类型打印出来
+		System.out.println(body);
+		return "hello!"+new Date();
+	}
+	
+	
+	
+	
+	
+	/**
+	 * 
+	 * @MethodName: testJson
+	 * @Description: TODO (向前台返回json格式的数据)
+	 * @return
+	 * @Return Type: Collection<Employee>
+	 * @Author: zc-cris
+	 */
+	@ResponseBody
+	@RequestMapping("testJson")
+	public Collection<Employee> testJson(){
+		return this.empDao.getEmps();
+	}
+	
+	
+	/**
+	 * 
+	 * @MethodName: initBinder
+	 * @Description: TODO (测试初始化binder的时候，指定springMVC框架不对表单中的某个属性赋值给对应的 pojo，而是我们自己处理
+	 * 						类似于添加用户时的角色id由我们自己生成对应的role集合)
+	 * @param binder
+	 * @Return Type: void
+	 * @Author: zc-cris
+	 */
+//	@InitBinder
+//	public void initBinder(WebDataBinder binder) {
+//		binder.setDisallowedFields("name");
+//	}
+	
+	
+	
+	/**
+	 * 
+	 * @MethodName: testConversion
+	 * @Description: TODO (测试自定义的类型转换器好不好用)
+	 * @param employee
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testConversion")
+	public String testConversion(@RequestParam("employee") Employee employee) {
+		System.out.println("conversion:" + employee);
+		this.empDao.save(employee);
+		return "redirect:/list";
+	}
 	
 	/**
 	 * 
@@ -101,8 +219,21 @@ public class EmpContoller {
 	 * @Author: zc-cris
 	 */
 	@RequestMapping(value="emp",method=RequestMethod.POST)
-	public String save(Employee employee) {
+	public String save(@Valid Employee employee, BindingResult result, Map<String, Object> map) {
+		//如果数据类型格式化失败，那么错误对象会被放入到 BindingResult 中
+		if(result.getErrorCount() > 0) {
+			for(FieldError error : result.getFieldErrors()) {
+				//打印错误字段和默认的错误提示消息
+				System.out.println(error.getField()+"----------"+error.getDefaultMessage());
+			}
+			//若验证失败，就转向定制的页面
+			map.put("depts", deptDao.getDepts());
+			return "input";
+			
+		}
+		
 		empDao.save(employee);
+		System.out.println(employee);
 		return "redirect:/list";
 	}
 	

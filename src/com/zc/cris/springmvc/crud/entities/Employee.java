@@ -1,13 +1,48 @@
 package com.zc.cris.springmvc.crud.entities;
 
+import java.util.Date;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Past;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.NumberFormat;
+
 public class Employee {
 
 	private Integer id;
+	@org.hibernate.validator.constraints.NotEmpty
 	private String name;
+	
+	@org.hibernate.validator.constraints.Email
 	private String email;
 	private Integer age;
 	private Department department;
 	private String gender;
+	
+	@Past
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private Date birth;
+	
+	@NumberFormat(pattern="#,###,###.#")
+	private Float salary;
+
+	public Float getSalary() {
+		return salary;
+	}
+
+	public void setSalary(Float salary) {
+		this.salary = salary;
+	}
+
+	public Date getBirth() {
+		return birth;
+	}
+
+	public void setBirth(Date birth) {
+		this.birth = birth;
+	}
 
 	public String getGender() {
 		return gender;
@@ -57,6 +92,8 @@ public class Employee {
 		this.department = department;
 	}
 
+	
+	
 	public Employee(Integer id, String name, String email, Integer age, Department department, String gender) {
 		super();
 		this.id = id;
@@ -67,9 +104,28 @@ public class Employee {
 		this.gender = gender;
 	}
 
+	public Employee(Integer id, String name, String email, Integer age, Department department, String gender,
+			Date birth) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.age = age;
+		this.department = department;
+		this.gender = gender;
+		this.birth = birth;
+	}
+
 	public Employee() {
 		super();
 
 	}
+
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + ", email=" + email + ", age=" + age + ", department="
+				+ department + ", gender=" + gender + ", birth=" + birth + ", salary=" + salary + "]";
+	}
+
 
 }

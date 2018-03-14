@@ -27,18 +27,14 @@
 </script>
 
 <body>
-
-	<a href="testResponseEntity">Ф╗║Ф▀÷Ф√┤Д╩╤Д╦▀Х╫╫</a>
-	
-	<!-- Ф╗║Ф▀÷Ф√┤Д╩╤Д╦┼Д╪═ -->
 	<form action="${pageContext.request.contextPath }/testHttpMessageConverter" method="post" enctype="multipart/form-data">
-		Д╦┼Д╪═Ф√┤Д╩╤О╪ <input type="file" name="file">
-		Ф√┤Д╩╤Ф▐▐Х©╟О╪ <input type="text" name="desc">
+		ио╢╚нд╪Чё╨<input type="file" name="file">
+		нд╪ЧцХйЖё╨<input type="text" name="desc">
 		<input type="submit" value="Submit">
 	</form>
 
 
-	<a href="list">Ф≤╬Г╓╨Ф┴─Ф°┴Е▒≤Е╥╔Д©║Ф│╞</a>
+	<a href="list">отй╬кЫспт╠╧╓пео╒</a>
 	
 	<a href="testJson" id="testJson">test Json</a>
 

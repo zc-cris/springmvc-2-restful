@@ -12,7 +12,7 @@ import com.zc.cris.springmvc.crud.entities.Employee;
 @Repository
 public class EmpDao {
 	
-	private static Map<String, Object> emps = new HashMap<>();
+	private static Map<String, Employee> emps = new HashMap<>();
 	static {
 		emps.put("1", new Employee(1, "james", "123@qq.com", 25, DeptDao.getDept("1"), "1"));
 		emps.put("2", new Employee(2, "cris", "444@qq.com", 28, DeptDao.getDept("2"),"0"));
@@ -63,7 +63,7 @@ public class EmpDao {
 	 * @Return Type: Collection<Object>
 	 * @Author: zc-cris
 	 */
-	public Collection<Object> getEmps() {
+	public Collection<Employee> getEmps() {
 		return EmpDao.emps.values();
 	}
 

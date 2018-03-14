@@ -17,12 +17,32 @@
 
 	<!-- 可以在 SpringMVC 的配置文件中配置 <mvc:default-servlethandler/> 的方式解决静态资源的问题： 
 		– <mvc:default-servlet-handler/> 将在 SpringMVC 上下文中定义一个 DefaultServletHttpRequestHandler，它会对进入 
-		DispatcherServlet 的 请求进行筛查，如果发现是没有经过映射的请求，就将该请求交由 WEB 应用服务器默认的 Servlet 处理，如果不是静态资源的请求，才由 
-		DispatcherServlet 继续处理 – 一般 WEB 应用服务器默认的 Servlet 的名称都是 default。若所使用的 WEB 
-		服务器的默认 Servlet 名称不是 default，则需要通过 defaultservlet-name 属性显式指定 -->
+		DispatcherServlet 的 请求进行筛查，如果发现是没有经过映射的请求，就将该请求交由 WEB 应用服务器默认的 Servlet 处理，如果不是静态资源的请求，
+		
+		才由DispatcherServlet 继续处理 – 一般 WEB 应用服务器默认的 Servlet 的名称都是 default。
+		
+		若所使用的 WEB服务器的默认 Servlet 名称不是 default，则需要通过 defaultservlet-name 属性显式指定 -->
 	<mvc:default-servlet-handler />
 
-	<mvc:annotation-driven></mvc:annotation-driven>
+	<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven>
+
+	<!-- 配置 conversionService 并添加自定义的转换器 -->
+	
+<!-- 	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean"> -->
+	<!-- 既可以使用springMVC自带的格式转换器，也可以使用我们自定义的类型转换器 -->
+	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="empConvertor"/>
+			</set>
+		</property>
+	</bean>
+
+	<!-- 配置国际化资源文件 -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="i18n"></property>
+	</bean>
+
 
 
 </beans>
