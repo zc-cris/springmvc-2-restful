@@ -38,11 +38,56 @@
 		</property>
 	</bean>
 
+
 	<!-- 配置国际化资源文件 -->
 	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basename" value="i18n"></property>
 	</bean>
+	
+	<!-- 注册 SessionLocaleResolver，用于将拦截器拦截的 获取的locale参数的值设置到session中 -->
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+	
+	<!-- 注册 LocaleChangeInterceptor 拦截器用于拦截带有 locale名字参数的请求 -->
+	<mvc:interceptors>
+		
+		<!-- 注册自定义的拦截器 -->
+		<!-- <bean class="com.zc.cris.springmvc.crud.interceptor.MyInterceptor"></bean>
+		指定自定义的拦截器拦截哪些请求路径（或者不拦截哪些请求路径）
+		<mvc:interceptor>
+			<mvc:mapping path="/list"/>
+			<bean class="com.zc.cris.springmvc.crud.interceptor.MyInterceptor2"></bean>
+		</mvc:interceptor> -->
+		
+		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+	</mvc:interceptors>
+	
+	
+	<!-- 设置不通过controller 直接访问jsp页面 
+		path: 值是用户直接访问的url
+		view-name：将会由视图解析器解析成对应的jsp页面
+	-->
+	<mvc:view-controller path="/i18n" view-name="i18n"/>
+	<!-- 模拟后台获取 Locale 对象，先注释掉这行 -->
+	<!-- <mvc:view-controller path="/i18n2" view-name="i18n2"/> -->
 
+
+
+	<!-- 实现文件上传必须配置 MultipartResolver的实现类，我们这里使用 Apache 提供的commons组件 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8" />
+		<property name="maxUploadSize" value="1024000"></property>
+	</bean>
+	
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<!-- 如果配置了 exceptionAttribute，那么jsp页面就只能使用 ex 来显示错误信息  -->
+		<!-- <property name="exceptionAttribute" value="ex"></property> -->
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.ArrayIndexOutOfBoundsException">error</prop>
+			</props>
+		</property>
+	</bean>
+	
 
 
 </beans>

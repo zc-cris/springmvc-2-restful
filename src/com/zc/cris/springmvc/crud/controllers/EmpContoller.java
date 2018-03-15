@@ -1,9 +1,11 @@
 package com.zc.cris.springmvc.crud.controllers;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -11,6 +13,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +31,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.sun.prism.impl.BaseMesh.FaceMembers;
 import com.zc.cris.springmvc.crud.dao.DeptDao;
 import com.zc.cris.springmvc.crud.dao.EmpDao;
 import com.zc.cris.springmvc.crud.entities.Employee;
+import com.zc.cris.springmvc.crud.exception.NotFindUserNameAndPasswordException;
 
 @Controller
 public class EmpContoller {
@@ -39,6 +47,184 @@ public class EmpContoller {
 	private EmpDao empDao;
 	@Autowired
 	private DeptDao deptDao;
+	
+	@Autowired
+	private ResourceBundleMessageSource resoure;
+	
+	/**
+	 * 
+	 * @MethodName: testSimpleMappingExceptionResolver
+	 * @Description: TODO (测试通过 xml 配置的方式统一处理异常（通过 SimpleMappingExceptionResolver 类）)
+	 * @param i
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testSimpleMappingExceptionResolver")
+	public String testSimpleMappingExceptionResolver(@RequestParam("i") int i) {
+		
+		String[] strs = new String[10];
+		System.out.println(strs[i]);
+		
+		return "success";
+	}
+	
+	
+	/**
+	 * 
+	 * @MethodName: testDefaultHandlerExceptionResolver
+	 * @Description: TODO (测试 DefaultHandlerExceptionResolver 类对于常见异常的处理)
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping(value="testDefaultHandlerExceptionResolver", method=RequestMethod.POST)
+	public String testDefaultHandlerExceptionResolver() {
+		System.out.println("正常执行！");
+		return "success";
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @MethodName: testNotFindUserNameAndPasswordException
+	 * @Description: TODO (测试通过 @responseStatus 注解处理抛出的自定义异常)
+	 * @param i
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testNotFindUserNameAndPasswordException")
+	public String testNotFindUserNameAndPasswordException(@RequestParam("i") Integer i) {
+		
+		if(i == 10) {
+			throw new NotFindUserNameAndPasswordException();
+		}
+		
+		System.out.println("没有异常，正常执行");
+		return "success";
+	}
+	
+	
+	/**
+	 * 
+	 * @MethodName: handException
+	 * @Description: TODO (测试异常的优先级，越具体的异常优先级越高)
+	 * @param exception
+	 * @return
+	 * @Return Type: ModelAndView
+	 * @Author: zc-cris
+	 */
+//	@ExceptionHandler({Exception.class})
+//	public ModelAndView handException(Exception exception) {
+//		System.out.println("-----------------" + exception.getMessage());
+//		
+//		ModelAndView mv = new ModelAndView("error");
+//		mv.addObject("exception", exception);
+//		return mv;
+//		
+//	}
+	
+	/**
+	 * 
+	 * @MethodName: getArithmeticException
+	 * @Description: TODO (处理算数异常的方法)
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	/*
+	 * 1. 在 @ExceptionHandler 注解方法的入参中可以加入 Exception 类型的参数，该参数对应捕获的异常对象类型
+	 * 2. 在@ExceptionHandler 方法的入参中，不能使用 Map类型的参数，如果希望把异常信息显示在jsp页面上，需要
+	 * 		使用 ModelAndView 作为返回值
+	 * 3. @ExceptionHandler 方法标记的异常有优先级的问题
+	 * 4. 实际开发中，都是将异常方法独立出来，放在特定的异常类中，而不会放在我们的controller中,
+	 * 		这个特定处理异常的类我们使用 @ControllerAdvice 标记，即如果在当前 controller 中无法找到 @ExceptionHandler
+	 * 		方法处理异常，就会去 @ControllerAdvice 标记的类中查找  @ExceptionHandler 标记的方法来处理异常
+	 */
+	@ExceptionHandler({ArithmeticException.class})
+	public ModelAndView handArithmeticException(Exception exception) {
+		
+		System.out.println(exception.getMessage());
+		
+		ModelAndView mv = new ModelAndView("error");
+		mv.addObject("exception", exception);
+		return mv;
+	}
+	
+	
+	/**
+	 * 
+	 * @MethodName: testExceptionHandler
+	 * @Description: TODO (测试 springMVC 处理异常的流程)
+	 * @param i
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testExceptionHandler")
+	public String testExceptionHandler(@RequestParam("i") Integer i) {
+		int a = 10/i;
+		System.out.println(a);
+		return "success";
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @MethodName: testFileUpload
+	 * @Description: TODO (通过springMVC 实现文件的上传)
+	 * @param desc
+	 * @param file
+	 * @return
+	 * @throws IOException 
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("testFileUpload")
+	public String testFileUpload(@RequestParam("desc") String desc, 
+			@RequestParam("file") MultipartFile file, HttpSession session) throws IOException {
+		System.out.println("desc:" + desc);
+		System.out.println("file's originalName:"+file.getOriginalFilename());
+		System.out.println("file's inputStream:" + file.getInputStream());
+		System.out.println("file's size:" + file.getSize());
+		
+		//将上传文件保存到指定的目录
+		ServletContext servletContext = session.getServletContext();
+		String path = servletContext.getRealPath("/file/"+file.getOriginalFilename());
+		FileOutputStream outputStream = new FileOutputStream(path);
+		InputStream inputStream = file.getInputStream();
+		
+		byte[] buffer = new byte[1024];
+		int len = 0;
+		while((len = inputStream.read(buffer)) != -1) {
+			outputStream.write(buffer, 0, len);
+		}
+		outputStream.close();
+		inputStream.close();
+		return "success";
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @MethodName: testi18n
+	 * @Description: TODO (测试从前台获取locale并且打印想要的国家化消息)
+	 * @param locale
+	 * @return
+	 * @Return Type: String
+	 * @Author: zc-cris
+	 */
+	@RequestMapping("i18n2")
+	public String testi18n(Locale locale) {
+		String message = resoure.getMessage("i18n.name", null, locale);
+		System.out.println(message);
+		return "i18n";
+	}
+	
 	
 	/**
 	 * 
